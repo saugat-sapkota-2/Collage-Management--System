@@ -6,7 +6,7 @@
 
 ---
 
-## Team reInF
+## Team reinF
 
 - Saugat Sapkota
 - Bikesh Lama Lo
