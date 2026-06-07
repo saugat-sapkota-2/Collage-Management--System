@@ -15,15 +15,6 @@
 
 ---
 
-## Project Highlights
-
-- Secure login with hashed passwords (`password_hash` + `password_verify`)
-- Role-based dashboards (`admin`, `teacher`, `student`)
-- Organized frontend by role-specific folders and styles
-- Session-based authentication with DB role refresh
-
----
-
 ## Folder Structure
 
 ```text
