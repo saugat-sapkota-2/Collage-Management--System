@@ -1,0 +1,258 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    /* Changed to match the light bluish canvas color to fill the full screen */
+    background-color: #e6f0ff; 
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Full Screen Layout Container */
+.login-container {
+    background-color: #e6f0ff;
+    width: 100vw;   /* Full Viewport Width */
+    height: 100vh;  /* Full Viewport Height */
+    display: flex;
+    overflow: hidden;
+}
+
+/* Left Brand Side */
+.brand-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.logo-circle {
+    background-color: #ffffff;
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 25px;
+}
+
+.logo-circle i {
+    font-size: 60px;
+    color: #6342ff; 
+}
+
+.brand-title {
+    font-size: 38px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 12px;
+}
+
+.brand-title span {
+    color: #6342ff;
+}
+
+.brand-subtitle {
+    font-size: 16px;
+    color: #555555;
+    font-weight: 500;
+}
+
+/* Right Form Side */
+.form-section {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+}
+
+.form-card {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 440px;
+    padding: 45px 40px;
+    border-radius: 24px; /* Keeps the clean rounded card shape */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04); /* Soft drop shadow for elevation */
+}
+
+.form-card h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #000000;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.form-subtitle {
+    font-size: 14px;
+    color: #666666;
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.login-alert {
+    display: none;
+    margin: -14px 0 18px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.login-alert.is-visible {
+    display: block;
+}
+
+/* Input Styles */
+.input-group {
+    margin-bottom: 22px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #444444;
+    margin-bottom: 8px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 15px;
+    color: #666666;
+    font-size: 16px;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 14px 15px 14px 45px;
+    border: 1px solid #e2e8f0;
+    background-color: #f3f4f6; 
+    border-radius: 8px;
+    font-size: 14px;
+    color: #333333;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.input-wrapper input::placeholder {
+    color: #999999;
+}
+
+.input-wrapper input:focus {
+    border-color: #6342ff;
+    background-color: #ffffff;
+}
+
+.input-wrapper select {
+    width: 100%;
+    padding: 14px 15px 14px 45px;
+    border: 1px solid #e2e8f0;
+    background-color: #f3f4f6;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #333333;
+    outline: none;
+    transition: all 0.2s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.input-wrapper select:focus {
+    border-color: #6342ff;
+    background-color: #ffffff;
+}
+
+.input-wrapper select option {
+    color: #333333;
+}
+
+/* Checkbox & Forgot Password Row */
+.options-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    font-size: 13px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+    color: #000000;
+}
+
+.remember-me input {
+    margin-right: 8px;
+    accent-color: #6342ff;
+    width: 15px;
+    height: 15px;
+}
+
+.forgot-password {
+    color: #000000;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* Sign In Button */
+.sign-in-btn {
+    width: 100%;
+    background-color: #6342ff;
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.sign-in-btn:hover {
+    background-color: #4f32e0;
+}
+
+/* Responsive view for tablets/phones */
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+        overflow-y: auto;
+    }
+    .brand-section {
+        padding: 40px 20px 10px 20px;
+        flex: none;
+    }
+    .form-section {
+        padding: 20px;
+        align-items: flex-start;
+    }
+}

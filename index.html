@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="brand-section">
+            <div class="logo-circle">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <h1 class="brand-title">College <span>Management</span></h1>
+            <p class="brand-subtitle">Your Gateway to Academic Excellence</p>
+        </div>
+
+        <div class="form-section">
+            <div class="form-card">
+                <h2>Welcome Back</h2>
+                <p class="form-subtitle">Sign in to continue to your dashboard</p>
+                <div class="login-alert" id="loginAlert" aria-live="polite"></div>
+
+                <form id="loginForm" action="Backend/auth.php" method="post">
+                    <div class="input-group">
+                        <label for="email">Email Address</label>
+                        <div class="input-wrapper">
+                            <i class="fa-regular fa-envelope input-icon"></i>
+                            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                        </div>
+                    </div>
+
+                    <div class="options-row">
+                        <label class="remember-me">
+                            <input type="checkbox" id="remember" name="remember">
+                            <span class="custom-checkbox"></span>
+                            Remember me
+                        </label>
+                        <a href="#" class="forgot-password">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="sign-in-btn">Sign In</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
