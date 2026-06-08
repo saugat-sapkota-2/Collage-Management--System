@@ -137,7 +137,7 @@ function moduleStatusClass(bool $active): string
                 <a class="nav-item" href="#teachers"><span class="nav-icon">◫</span><span>Teachers</span></a>
                 <a class="nav-item" href="#courses"><span class="nav-icon">▭</span><span>Courses</span></a>
                 <a class="nav-item" href="#attendance"><span class="nav-icon">◔</span><span>Attendance</span></a>
-                <a class="nav-item" href="#finance"><span class="nav-icon">$</span><span>Finance</span></a>
+                <a class="nav-item" href="#finance"><span class="nav-icon">Rs</span><span>Finance</span></a>
                 <a class="nav-item" href="#reports"><span class="nav-icon">▦</span><span>Reports</span></a>
                 <a class="nav-item" href="#timetable"><span class="nav-icon">▤</span><span>Timetable</span></a>
                 <a class="nav-item" href="#notices"><span class="nav-icon">◌</span><span>Notices</span></a>
@@ -203,7 +203,7 @@ function moduleStatusClass(bool $active): string
                 </nav>
 
                 <section class="module-section active" data-module="students" id="students">
-                    <div class="module-header">
+                    <div class="module-header" id="studentsHeader">
                         <div>
                             <h2>Student Management</h2>
                             <p>Add, edit, search, filter, activate, deactivate, and manage login credentials.</p>
@@ -213,7 +213,7 @@ function moduleStatusClass(bool $active): string
                         </div>
                     </div>
 
-                    <div class="module-grid">
+                    <div class="module-grid full-width-grid" id="studentsGrid">
                         <article class="panel-card module-table-panel">
                             <div class="table-toolbar">
                                 <label class="toolbar-search">
@@ -250,62 +250,163 @@ function moduleStatusClass(bool $active): string
                                 </div>
                             </div>
                         </article>
+                    </div>
 
-                        <aside class="panel-card detail-panel" data-detail-panel="students">
-                            <div class="panel-header">
-                                <h3>Student Profile</h3>
-                                <span class="panel-subtitle">Personal, course, attendance, fee, and login details</span>
-                            </div>
-                            <div class="detail-placeholder" data-placeholder="students">
-                                Select a student row to view profile and login credentials.
-                            </div>
-                            <div class="detail-content hidden" data-detail-content="students">
-                                <div class="detail-avatar-row">
-                                    <div class="detail-avatar" data-avatar="students">S</div>
-                                    <div>
-                                        <strong data-detail-title="students">Student Name</strong>
-                                        <span data-detail-subtitle="students">Username</span>
+                    <!-- New Full Page Student Profile View -->
+                    <div class="profile-container hidden" id="studentProfileContainer">
+                        <div class="profile-header-actions">
+                            <button type="button" class="back-button" id="backToStudentsList">
+                                <span class="back-icon">←</span> Back to Students List
+                            </button>
+                        </div>
+                        
+                        <div class="profile-hero-card">
+                            <div class="profile-hero-bg"></div>
+                            <div class="profile-hero-content">
+                                <div class="profile-hero-avatar" id="studentHeroAvatar">S</div>
+                                <div class="profile-hero-info">
+                                    <div class="profile-hero-name-row">
+                                        <h2 id="studentHeroName">Student Name</h2>
+                                        <span class="status-badge" id="studentHeroStatus">Active</span>
                                     </div>
-                                </div>
-
-                                <div class="info-grid">
-                                    <div>
-                                        <span>Personal Information</span>
-                                        <p data-detail-personal="students">-</p>
-                                    </div>
-                                    <div>
-                                        <span>Course Information</span>
-                                        <p data-detail-course="students">-</p>
-                                    </div>
-                                    <div>
-                                        <span>Attendance Summary</span>
-                                        <p data-detail-attendance="students">-</p>
-                                    </div>
-                                    <div>
-                                        <span>Fee Status</span>
-                                        <p data-detail-fees="students">-</p>
-                                    </div>
-                                </div>
-
-                                <div class="credential-card">
-                                    <div class="credential-label">LOGIN EMAIL</div>
-                                    <div class="credential-value" data-credential-email="students">-</div>
-                                    <div class="credential-label credential-spacer">PASSWORD</div>
-                                    <div class="credential-value password-mask" data-credential-password="students">********</div>
-                                    <div class="credential-actions">
-                                        <button type="button" data-copy-email="students">Copy Email</button>
-                                        <button type="button" data-toggle-password="students">Show Password</button>
-                                        <button type="button" data-copy-password="students">Copy Password</button>
-                                        <button type="button" data-reset-password="students">Reset Password</button>
-                                    </div>
+                                    <p class="profile-hero-meta">
+                                        <span id="studentHeroCourse">Course</span> • 
+                                        <span id="studentHeroSemester">Semester</span> • 
+                                        <span id="studentHeroId">ID</span>
+                                    </p>
                                 </div>
                             </div>
-                        </aside>
+                        </div>
+
+                        <div class="profile-grid">
+                            <!-- Left Column: Personal and Academic Info -->
+                            <div class="profile-col-main">
+                                <section class="profile-section-card">
+                                    <div class="section-card-header">
+                                        <span class="section-icon">👤</span>
+                                        <h3>Personal Details</h3>
+                                    </div>
+                                    <div class="profile-fields-grid">
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Full Name</span>
+                                            <strong class="field-value" id="studentDetailFullName">John Doe</strong>
+                                        </div>
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Gender</span>
+                                            <strong class="field-value" id="studentDetailGender">Male</strong>
+                                        </div>
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Date of Birth</span>
+                                            <strong class="field-value" id="studentDetailDob">Jan 1, 2000</strong>
+                                        </div>
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Phone</span>
+                                            <strong class="field-value" id="studentDetailPhone">9876543210</strong>
+                                        </div>
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Email</span>
+                                            <strong class="field-value" id="studentDetailEmail">john@example.com</strong>
+                                        </div>
+                                        <div class="profile-field-item full-width">
+                                            <span class="field-label">Address</span>
+                                            <strong class="field-value" id="studentDetailAddress">123 Street Name, City</strong>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section class="profile-section-card">
+                                    <div class="section-card-header">
+                                        <span class="section-icon">🎓</span>
+                                        <h3>Academic Information</h3>
+                                    </div>
+                                    <div class="profile-fields-grid">
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Course Name</span>
+                                            <strong class="field-value" id="studentDetailCourseName">BSc CS</strong>
+                                        </div>
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Course Code</span>
+                                            <strong class="field-value" id="studentDetailCourseCode">CS-101</strong>
+                                        </div>
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Semester</span>
+                                            <strong class="field-value" id="studentDetailSemester">Semester 1</strong>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            <!-- Right Column: Attendance, Fees, Credentials -->
+                            <div class="profile-col-side">
+                                <section class="profile-section-card highlight-card">
+                                    <div class="section-card-header">
+                                        <span class="section-icon">📅</span>
+                                        <h3>Attendance Stats</h3>
+                                    </div>
+                                    <div class="attendance-summary-list">
+                                        <div class="attendance-stat-item present">
+                                            <span class="stat-lbl">Present</span>
+                                            <strong class="stat-val" id="studentDetailPresent">0</strong>
+                                        </div>
+                                        <div class="attendance-stat-item absent">
+                                            <span class="stat-lbl">Absent</span>
+                                            <strong class="stat-val" id="studentDetailAbsent">0</strong>
+                                        </div>
+                                        <div class="attendance-stat-item leave">
+                                            <span class="stat-lbl">Leave</span>
+                                            <strong class="stat-val" id="studentDetailLeave">0</strong>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section class="profile-section-card highlight-card">
+                                    <div class="section-card-header">
+                                        <span class="section-icon">💳</span>
+                                        <h3>Fee Summary</h3>
+                                    </div>
+                                    <div class="fee-details-box">
+                                        <div class="fee-stat-row">
+                                            <span>Amount Due</span>
+                                            <strong class="due-amount" id="studentDetailFeeDue">Rs. 0.00</strong>
+                                        </div>
+                                        <div class="fee-stat-row">
+                                            <span>Amount Paid</span>
+                                            <strong class="paid-amount" id="studentDetailFeePaid">Rs. 0.00</strong>
+                                        </div>
+                                        <div class="fee-status-badge-row">
+                                            <span>Status</span>
+                                            <span class="status-badge" id="studentDetailFeeStatus">Pending</span>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section class="profile-section-card highlight-card">
+                                    <div class="section-card-header">
+                                        <span class="section-icon">🔐</span>
+                                        <h3>Login Credentials</h3>
+                                    </div>
+                                    <div class="credential-card">
+                                        <div class="credential-label">LOGIN EMAIL</div>
+                                        <div class="credential-value" id="studentProfileEmail">-</div>
+                                        <div class="credential-label credential-spacer">PASSWORD</div>
+                                        <div class="credential-value password-mask" id="studentProfilePassword">********</div>
+                                        <div class="credential-actions stacked">
+                                            <button type="button" data-toggle-password="students">Show Password</button>
+                                            <div class="credential-actions-sub-row">
+                                                <button type="button" data-copy-email="students">Copy Email</button>
+                                                <button type="button" data-copy-password="students">Copy Password</button>
+                                            </div>
+                                            <button type="button" data-reset-password="students" class="danger">Reset Password</button>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
                 <section class="module-section" data-module="teachers" id="teachers">
-                    <div class="module-header">
+                    <div class="module-header" id="teachersHeader">
                         <div>
                             <h2>Teacher Management</h2>
                             <p>Maintain teacher accounts, departments, qualifications, and credentials.</p>
@@ -315,7 +416,7 @@ function moduleStatusClass(bool $active): string
                         </div>
                     </div>
 
-                    <div class="module-grid">
+                    <div class="module-grid full-width-grid" id="teachersGrid">
                         <article class="panel-card module-table-panel">
                             <div class="table-toolbar">
                                 <label class="toolbar-search">
@@ -351,57 +452,116 @@ function moduleStatusClass(bool $active): string
                                 </div>
                             </div>
                         </article>
+                    </div>
 
-                        <aside class="panel-card detail-panel" data-detail-panel="teachers">
-                            <div class="panel-header">
-                                <h3>Teacher Profile</h3>
-                                <span class="panel-subtitle">Department, qualification, and login credentials</span>
-                            </div>
-                            <div class="detail-placeholder" data-placeholder="teachers">
-                                Select a teacher row to view profile and login credentials.
-                            </div>
-                            <div class="detail-content hidden" data-detail-content="teachers">
-                                <div class="detail-avatar-row">
-                                    <div class="detail-avatar" data-avatar="teachers">T</div>
-                                    <div>
-                                        <strong data-detail-title="teachers">Teacher Name</strong>
-                                        <span data-detail-subtitle="teachers">Username</span>
+                    <!-- New Full Page Teacher Profile View -->
+                    <div class="profile-container hidden" id="teacherProfileContainer">
+                        <div class="profile-header-actions">
+                            <button type="button" class="back-button" id="backToTeachersList">
+                                <span class="back-icon">←</span> Back to Teachers List
+                            </button>
+                        </div>
+                        
+                        <div class="profile-hero-card">
+                            <div class="profile-hero-bg"></div>
+                            <div class="profile-hero-content">
+                                <div class="profile-hero-avatar" id="teacherHeroAvatar">T</div>
+                                <div class="profile-hero-info">
+                                    <div class="profile-hero-name-row">
+                                        <h2 id="teacherHeroName">Teacher Name</h2>
+                                        <span class="status-badge" id="teacherHeroStatus">Active</span>
                                     </div>
-                                </div>
-
-                                <div class="info-grid">
-                                    <div>
-                                        <span>Personal Information</span>
-                                        <p data-detail-personal="teachers">-</p>
-                                    </div>
-                                    <div>
-                                        <span>Department & Qualification</span>
-                                        <p data-detail-course="teachers">-</p>
-                                    </div>
-                                    <div>
-                                        <span>Joining Date</span>
-                                        <p data-detail-attendance="teachers">-</p>
-                                    </div>
-                                    <div>
-                                        <span>Assigned Courses</span>
-                                        <p data-detail-fees="teachers">-</p>
-                                    </div>
-                                </div>
-
-                                <div class="credential-card">
-                                    <div class="credential-label">LOGIN EMAIL</div>
-                                    <div class="credential-value" data-credential-email="teachers">-</div>
-                                    <div class="credential-label credential-spacer">PASSWORD</div>
-                                    <div class="credential-value password-mask" data-credential-password="teachers">********</div>
-                                    <div class="credential-actions">
-                                        <button type="button" data-copy-email="teachers">Copy Email</button>
-                                        <button type="button" data-toggle-password="teachers">Show Password</button>
-                                        <button type="button" data-copy-password="teachers">Copy Password</button>
-                                        <button type="button" data-reset-password="teachers">Reset Password</button>
-                                    </div>
+                                    <p class="profile-hero-meta">
+                                        <span id="teacherHeroDepartment">Department</span> • 
+                                        <span id="teacherHeroId">ID</span>
+                                    </p>
                                 </div>
                             </div>
-                        </aside>
+                        </div>
+
+                        <div class="profile-grid">
+                            <!-- Left Column: Personal and Professional Info -->
+                            <div class="profile-col-main">
+                                <section class="profile-section-card">
+                                    <div class="section-card-header">
+                                        <span class="section-icon">👤</span>
+                                        <h3>Personal Details</h3>
+                                    </div>
+                                    <div class="profile-fields-grid">
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Full Name</span>
+                                            <strong class="field-value" id="teacherDetailFullName">John Doe</strong>
+                                        </div>
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Phone</span>
+                                            <strong class="field-value" id="teacherDetailPhone">9876543210</strong>
+                                        </div>
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Email</span>
+                                            <strong class="field-value" id="teacherDetailEmail">teacher@example.com</strong>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section class="profile-section-card">
+                                    <div class="section-card-header">
+                                        <span class="section-icon">🎓</span>
+                                        <h3>Professional Information</h3>
+                                    </div>
+                                    <div class="profile-fields-grid">
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Department</span>
+                                            <strong class="field-value" id="teacherDetailDepartment">Computer Science</strong>
+                                        </div>
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Qualification</span>
+                                            <strong class="field-value" id="teacherDetailQualification">PhD CS</strong>
+                                        </div>
+                                        <div class="profile-field-item">
+                                            <span class="field-label">Joining Date</span>
+                                            <strong class="field-value" id="teacherDetailJoiningDate">Jan 1, 2020</strong>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            <!-- Right Column: Assigned Courses & Credentials -->
+                            <div class="profile-col-side">
+                                <section class="profile-section-card highlight-card">
+                                    <div class="section-card-header">
+                                        <span class="section-icon">📚</span>
+                                        <h3>Assigned Courses</h3>
+                                    </div>
+                                    <div class="fee-details-box">
+                                        <div class="fee-stat-row">
+                                            <span>Active Courses</span>
+                                            <strong class="paid-amount" id="teacherDetailAssignedCourses">0</strong>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section class="profile-section-card highlight-card">
+                                    <div class="section-card-header">
+                                        <span class="section-icon">🔐</span>
+                                        <h3>Login Credentials</h3>
+                                    </div>
+                                    <div class="credential-card">
+                                        <div class="credential-label">LOGIN EMAIL</div>
+                                        <div class="credential-value" id="teacherProfileEmail">-</div>
+                                        <div class="credential-label credential-spacer">PASSWORD</div>
+                                        <div class="credential-value password-mask" id="teacherProfilePassword">********</div>
+                                        <div class="credential-actions stacked">
+                                            <button type="button" data-toggle-password="teachers">Show Password</button>
+                                            <div class="credential-actions-sub-row">
+                                                <button type="button" data-copy-email="teachers">Copy Email</button>
+                                                <button type="button" data-copy-password="teachers">Copy Password</button>
+                                            </div>
+                                            <button type="button" data-reset-password="teachers" class="danger">Reset Password</button>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
                     </div>
                 </section>
 

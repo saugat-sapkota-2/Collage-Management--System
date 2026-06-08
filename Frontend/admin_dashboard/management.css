@@ -313,7 +313,7 @@
 }
 
 .actions-cell {
-    width: 72px;
+    width: 130px;
     text-align: right;
 }
 
@@ -321,6 +321,7 @@
     position: relative;
     display: inline-flex;
     justify-content: flex-end;
+    gap: 6px;
 }
 
 .row-menu-toggle {
@@ -843,4 +844,330 @@
 
 .management-toast.is-error {
     background: #b91c1c;
+}
+
+/* Full Width Grid for single panel views */
+.module-grid.full-width-grid {
+    grid-template-columns: 1fr;
+}
+
+/* Student Profile Page Styling */
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 10px;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-header-actions {
+    display: flex;
+    align-items: center;
+}
+
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 18px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.back-button:hover {
+    background: var(--border);
+    transform: translateX(-3px);
+}
+
+.profile-hero-card {
+    position: relative;
+    border-radius: 24px;
+    padding: 32px;
+    color: #fff;
+    background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+    box-shadow: 0 20px 40px rgba(124, 58, 237, 0.2);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+
+.profile-hero-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.15), transparent 60%);
+    pointer-events: none;
+}
+
+.profile-hero-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.profile-hero-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 3px solid rgba(255, 255, 255, 0.6);
+    display: grid;
+    place-items: center;
+    font-size: 36px;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.profile-hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.profile-hero-name-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.profile-hero-name-row h2 {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.profile-hero-name-row .status-badge {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.profile-hero-meta {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(360px, 0.9fr);
+    gap: 24px;
+}
+
+.profile-col-main,
+.profile-col-side {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.profile-section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.profile-section-card.highlight-card {
+    border-color: rgba(124, 58, 237, 0.15);
+    background: linear-gradient(180deg, var(--surface) 0%, rgba(124, 58, 237, 0.02) 100%);
+}
+
+.section-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+}
+
+.section-icon {
+    font-size: 20px;
+}
+
+.section-card-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.profile-fields-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.profile-field-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.profile-field-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.profile-field-item .field-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.profile-field-item .field-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.45;
+}
+
+/* Attendance Stats styling */
+.attendance-summary-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.attendance-stat-item {
+    text-align: center;
+    padding: 16px 12px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid transparent;
+}
+
+.attendance-stat-item.present {
+    background: rgba(16, 185, 129, 0.08);
+    color: #059669;
+    border-color: rgba(16, 185, 129, 0.15);
+}
+
+.attendance-stat-item.absent {
+    background: rgba(239, 68, 68, 0.08);
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.15);
+}
+
+.attendance-stat-item.leave {
+    background: rgba(245, 158, 11, 0.08);
+    color: #d97706;
+    border-color: rgba(245, 158, 11, 0.15);
+}
+
+.attendance-stat-item .stat-lbl {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.attendance-stat-item .stat-val {
+    font-size: 24px;
+    font-weight: 800;
+}
+
+/* Fee Summary styling */
+.fee-details-box {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.fee-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+}
+
+.fee-stat-row span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.fee-stat-row strong {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.fee-stat-row strong.due-amount {
+    color: #dc2626;
+}
+
+.fee-stat-row strong.paid-amount {
+    color: #059669;
+}
+
+.fee-status-badge-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 16px;
+}
+
+.fee-status-badge-row span {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.fee-status-badge-row .status-badge {
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 4px 12px;
+}
+
+.status-badge.fee-paid {
+    color: #059669;
+    background: rgba(16, 185, 129, 0.12);
+}
+
+.status-badge.fee-partial {
+    color: #d97706;
+    background: rgba(245, 158, 11, 0.12);
+}
+
+.status-badge.fee-pending {
+    color: #dc2626;
+    background: rgba(239, 68, 68, 0.12);
+}
+
+.credential-actions-sub-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+@media (max-width: 900px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
 }

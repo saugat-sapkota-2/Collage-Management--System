@@ -132,7 +132,7 @@ $dashboardData = [
                 <a class="nav-item" href="management.php#teachers"><span class="nav-icon">◫</span><span>Teachers</span></a>
                 <a class="nav-item" href="management.php#courses"><span class="nav-icon">▭</span><span>Courses</span></a>
                 <a class="nav-item" href="#attendance"><span class="nav-icon">◔</span><span>Attendance</span></a>
-                <a class="nav-item" href="#finance"><span class="nav-icon">$</span><span>Finance</span></a>
+                <a class="nav-item" href="#finance"><span class="nav-icon">Rs</span><span>Finance</span></a>
                 <a class="nav-item" href="#reports"><span class="nav-icon">▦</span><span>Reports</span></a>
                 <a class="nav-item" href="#timetable"><span class="nav-icon">▤</span><span>Timetable</span></a>
                 <a class="nav-item" href="#notices"><span class="nav-icon">◌</span><span>Notices</span></a>
@@ -199,16 +199,16 @@ $dashboardData = [
                     <article class="stat-card">
                         <div class="stat-copy">
                             <span class="stat-title">Fees Collected</span>
-                            <strong class="stat-value" data-stat-value="feesCollected">$0</strong>
+                            <strong class="stat-value" data-stat-value="feesCollected">Rs. 0</strong>
                             <span class="stat-trend positive">+0% from last month</span>
                         </div>
-                        <div class="stat-icon green" aria-hidden="true">$</div>
+                        <div class="stat-icon green" aria-hidden="true">Rs</div>
                     </article>
 
                     <article class="stat-card">
                         <div class="stat-copy">
                             <span class="stat-title">Pending Fees</span>
-                            <strong class="stat-value" data-stat-value="pendingFees">$0</strong>
+                            <strong class="stat-value" data-stat-value="pendingFees">Rs. 0</strong>
                             <span class="stat-trend negative">-0% from last month</span>
                         </div>
                         <div class="stat-icon red" aria-hidden="true">!</div>
@@ -268,7 +268,7 @@ $dashboardData = [
             const data = window.dashboardData || {};
 
             const formatNumber = (value) => new Intl.NumberFormat('en-US').format(Number(value) || 0);
-            const formatCurrency = (value) => `$${formatNumber(value)}`;
+            const formatCurrency = (value) => `Rs. ${formatNumber(value)}`;
 
             const setSidebarState = (isOpen) => {
                 body.dataset.sidebarOpen = String(isOpen);

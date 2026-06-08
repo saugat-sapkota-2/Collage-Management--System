@@ -21,30 +21,47 @@
         },
         detail: {
             students: {
-                placeholder: document.querySelector('[data-placeholder="students"]'),
-                content: document.querySelector('[data-detail-content="students"]'),
-                title: document.querySelector('[data-detail-title="students"]'),
-                subtitle: document.querySelector('[data-detail-subtitle="students"]'),
-                avatar: document.querySelector('[data-avatar="students"]'),
-                personal: document.querySelector('[data-detail-personal="students"]'),
-                course: document.querySelector('[data-detail-course="students"]'),
-                attendance: document.querySelector('[data-detail-attendance="students"]'),
-                fees: document.querySelector('[data-detail-fees="students"]'),
-                credentialEmail: document.querySelector('[data-credential-email="students"]'),
-                credentialPassword: document.querySelector('[data-credential-password="students"]'),
+                container: document.getElementById('studentProfileContainer'),
+                avatar: document.getElementById('studentHeroAvatar'),
+                title: document.getElementById('studentHeroName'),
+                status: document.getElementById('studentHeroStatus'),
+                course: document.getElementById('studentHeroCourse'),
+                semester: document.getElementById('studentHeroSemester'),
+                id: document.getElementById('studentHeroId'),
+                fullName: document.getElementById('studentDetailFullName'),
+                gender: document.getElementById('studentDetailGender'),
+                dob: document.getElementById('studentDetailDob'),
+                phone: document.getElementById('studentDetailPhone'),
+                email: document.getElementById('studentDetailEmail'),
+                address: document.getElementById('studentDetailAddress'),
+                courseName: document.getElementById('studentDetailCourseName'),
+                courseCode: document.getElementById('studentDetailCourseCode'),
+                semesterVal: document.getElementById('studentDetailSemester'),
+                present: document.getElementById('studentDetailPresent'),
+                absent: document.getElementById('studentDetailAbsent'),
+                leave: document.getElementById('studentDetailLeave'),
+                feeDue: document.getElementById('studentDetailFeeDue'),
+                feePaid: document.getElementById('studentDetailFeePaid'),
+                feeStatus: document.getElementById('studentDetailFeeStatus'),
+                credentialEmail: document.getElementById('studentProfileEmail'),
+                credentialPassword: document.getElementById('studentProfilePassword'),
             },
             teachers: {
-                placeholder: document.querySelector('[data-placeholder="teachers"]'),
-                content: document.querySelector('[data-detail-content="teachers"]'),
-                title: document.querySelector('[data-detail-title="teachers"]'),
-                subtitle: document.querySelector('[data-detail-subtitle="teachers"]'),
-                avatar: document.querySelector('[data-avatar="teachers"]'),
-                personal: document.querySelector('[data-detail-personal="teachers"]'),
-                course: document.querySelector('[data-detail-course="teachers"]'),
-                attendance: document.querySelector('[data-detail-attendance="teachers"]'),
-                fees: document.querySelector('[data-detail-fees="teachers"]'),
-                credentialEmail: document.querySelector('[data-credential-email="teachers"]'),
-                credentialPassword: document.querySelector('[data-credential-password="teachers"]'),
+                container: document.getElementById('teacherProfileContainer'),
+                avatar: document.getElementById('teacherHeroAvatar'),
+                title: document.getElementById('teacherHeroName'),
+                status: document.getElementById('teacherHeroStatus'),
+                department: document.getElementById('teacherHeroDepartment'),
+                id: document.getElementById('teacherHeroId'),
+                fullName: document.getElementById('teacherDetailFullName'),
+                phone: document.getElementById('teacherDetailPhone'),
+                email: document.getElementById('teacherDetailEmail'),
+                departmentVal: document.getElementById('teacherDetailDepartment'),
+                qualification: document.getElementById('teacherDetailQualification'),
+                joiningDate: document.getElementById('teacherDetailJoiningDate'),
+                assignedCourses: document.getElementById('teacherDetailAssignedCourses'),
+                credentialEmail: document.getElementById('teacherProfileEmail'),
+                credentialPassword: document.getElementById('teacherProfilePassword'),
             },
             courses: {
                 placeholder: document.querySelector('[data-placeholder="courses"]'),
@@ -94,7 +111,7 @@
         },
     };
 
-    const formatCurrency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value) || 0);
+    const formatCurrency = (value) => 'Rs. ' + new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(value) || 0);
     const formatDate = (value) => {
         if (!value) {
             return '-';
@@ -255,6 +272,36 @@
         appState.activeModule = module;
         dom.moduleButtons.forEach((button) => button.classList.toggle('active', button.getAttribute('data-module-switch') === module));
         dom.sections.forEach((section) => section.classList.toggle('active', section.getAttribute('data-module') === module));
+
+        // Update sidebar nav-item active class dynamically
+        document.querySelectorAll('.sidebar .nav-menu .nav-item').forEach((item) => {
+            const href = item.getAttribute('href');
+            if (href === `#${module}` || href === `management.php#${module}`) {
+                item.classList.add('active');
+            } else if (href && (href.startsWith('#') || href.startsWith('management.php#'))) {
+                item.classList.remove('active');
+            }
+        });
+
+        // Reset student view back to list
+        if (module === 'students') {
+            const gridNode = document.getElementById('studentsGrid');
+            const headerNode = document.getElementById('studentsHeader');
+            const profileNode = document.getElementById('studentProfileContainer');
+            if (gridNode) gridNode.classList.remove('hidden');
+            if (headerNode) headerNode.classList.remove('hidden');
+            if (profileNode) profileNode.classList.add('hidden');
+        }
+
+        // Reset teacher view back to list
+        if (module === 'teachers') {
+            const gridNode = document.getElementById('teachersGrid');
+            const headerNode = document.getElementById('teachersHeader');
+            const profileNode = document.getElementById('teacherProfileContainer');
+            if (gridNode) gridNode.classList.remove('hidden');
+            if (headerNode) headerNode.classList.remove('hidden');
+            if (profileNode) profileNode.classList.add('hidden');
+        }
     };
 
     const closeAllRowMenus = () => {
@@ -313,13 +360,11 @@
         const toggleLabel = record.is_active ? 'Deactivate' : 'Activate';
         const items = module === 'courses'
             ? [
-                { action: 'view', label: 'View Details' },
                 { action: 'edit', label: 'Edit Course' },
                 { action: 'toggle', label: toggleLabel },
                 { action: 'delete', label: 'Delete Course', danger: true },
             ]
             : [
-                { action: 'view', label: 'View Profile' },
                 { action: 'edit', label: 'Edit' },
                 { action: 'credentials', label: 'View Credentials' },
                 { action: 'toggle', label: toggleLabel },
@@ -328,6 +373,14 @@
 
         return `
             <div class="row-actions" data-row-actions>
+                <button
+                    type="button"
+                    class="action-button primary"
+                    data-action="view"
+                    data-module="${module}"
+                    data-id="${record.id}"
+                    style="min-height: 36px;"
+                >View</button>
                 <button
                     type="button"
                     class="row-menu-toggle"
@@ -485,6 +538,91 @@
             return;
         }
 
+        if (module === 'students') {
+            if (!record) {
+                detail.container.classList.add('hidden');
+                return;
+            }
+
+            // Populate Avatar and Hero Section
+            detail.avatar.textContent = initials(record.full_name);
+            detail.title.textContent = record.full_name;
+            detail.status.textContent = record.is_active ? 'Active' : 'Inactive';
+            detail.status.className = `status-badge ${getStatusClass(record.is_active)}`;
+
+            detail.course.textContent = record.course_name || 'No Course';
+            detail.semester.textContent = record.semester || 'No Semester';
+            detail.id.textContent = `Student ID: #${record.id}`;
+
+            // Populate Personal Details Card
+            detail.fullName.textContent = record.full_name;
+            detail.gender.textContent = record.gender ? record.gender.charAt(0).toUpperCase() + record.gender.slice(1) : '-';
+            detail.dob.textContent = formatDate(record.date_of_birth);
+            detail.phone.textContent = record.phone || '-';
+            detail.email.textContent = record.email || '-';
+            detail.address.textContent = record.address || '-';
+
+            // Populate Academic Details Card
+            detail.courseName.textContent = record.course_name || '-';
+            detail.courseCode.textContent = record.course_code || '-';
+            detail.semesterVal.textContent = record.semester || '-';
+
+            // Populate Attendance Stats Card
+            detail.present.textContent = record.attendance?.present || 0;
+            detail.absent.textContent = record.attendance?.absent || 0;
+            detail.leave.textContent = record.attendance?.leave || 0;
+
+            // Populate Fee Summary Card
+            detail.feeDue.textContent = formatCurrency(record.fees?.due || 0);
+            detail.feePaid.textContent = formatCurrency(record.fees?.paid || 0);
+
+            const statusLabel = record.fees?.status || 'pending';
+            detail.feeStatus.textContent = statusLabel.toUpperCase();
+            detail.feeStatus.className = `status-badge fee-${statusLabel}`;
+
+            // Populate Credentials Card
+            detail.credentialEmail.textContent = record.credentials?.email || record.email || '-';
+
+            // Render Password Mask
+            renderCredentialPassword(module, record);
+            return;
+        }
+
+        if (module === 'teachers') {
+            if (!record) {
+                detail.container.classList.add('hidden');
+                return;
+            }
+
+            // Populate Avatar and Hero Section
+            detail.avatar.textContent = initials(record.full_name);
+            detail.title.textContent = record.full_name;
+            detail.status.textContent = record.is_active ? 'Active' : 'Inactive';
+            detail.status.className = `status-badge ${getStatusClass(record.is_active)}`;
+            detail.department.textContent = record.department || 'No Department';
+            detail.id.textContent = `Teacher ID: #${record.id}`;
+
+            // Populate Personal Details Card
+            detail.fullName.textContent = record.full_name;
+            detail.phone.textContent = record.phone || '-';
+            detail.email.textContent = record.email || '-';
+
+            // Populate Professional Info Card
+            detail.departmentVal.textContent = record.department || '-';
+            detail.qualification.textContent = record.qualification || '-';
+            detail.joiningDate.textContent = formatDate(record.joining_date);
+
+            // Populate Assigned Courses Card
+            detail.assignedCourses.textContent = record.assigned_courses || 0;
+
+            // Populate Credentials Card
+            detail.credentialEmail.textContent = record.credentials?.email || record.email || '-';
+
+            // Render Password Mask
+            renderCredentialPassword(module, record);
+            return;
+        }
+
         if (!record) {
             detail.placeholder.classList.remove('hidden');
             detail.content.classList.add('hidden');
@@ -493,41 +631,6 @@
 
         detail.placeholder.classList.add('hidden');
         detail.content.classList.remove('hidden');
-
-        if (module === 'students') {
-            detail.avatar.textContent = initials(record.full_name);
-            detail.title.textContent = record.full_name;
-            detail.subtitle.textContent = `${record.username} • ${record.email}`;
-            detail.personal.textContent = [
-                `Phone: ${record.phone || '-'}`,
-                `Address: ${record.address || '-'}`,
-                `Gender: ${record.gender || '-'}`,
-                `Date of Birth: ${formatDate(record.date_of_birth)}`,
-            ].join(' | ');
-            detail.course.textContent = [
-                `Course: ${record.course_name || '-'}`,
-                `Semester: ${record.semester || '-'}`,
-                `Course Code: ${record.course_code || '-'}`,
-            ].join(' | ');
-            detail.attendance.textContent = `Present ${record.attendance?.present || 0} | Absent ${record.attendance?.absent || 0} | Leave ${record.attendance?.leave || 0}`;
-            detail.fees.textContent = `Due ${formatCurrency(record.fees?.due || 0)} | Paid ${formatCurrency(record.fees?.paid || 0)} | Status ${record.fees?.status || 'pending'}`;
-            detail.credentialEmail.textContent = record.credentials?.email || record.email || '-';
-            renderCredentialPassword(module, record);
-            return;
-        }
-
-        if (module === 'teachers') {
-            detail.avatar.textContent = initials(record.full_name);
-            detail.title.textContent = record.full_name;
-            detail.subtitle.textContent = `${record.username} • ${record.email}`;
-            detail.personal.textContent = `Phone: ${record.phone || '-'}`;
-            detail.course.textContent = `Department: ${record.department || '-'} | Qualification: ${record.qualification || '-'}`;
-            detail.attendance.textContent = `Joining Date: ${formatDate(record.joining_date)}`;
-            detail.fees.textContent = `Assigned Courses: ${record.assigned_courses || 0}`;
-            detail.credentialEmail.textContent = record.credentials?.email || record.email || '-';
-            renderCredentialPassword(module, record);
-            return;
-        }
 
         if (module === 'courses') {
             detail.avatar.textContent = initials(record.course_name);
@@ -834,8 +937,29 @@
 
     const showRecord = (module, id) => {
         appState.selected[module] = Number(id);
-        renderDetail(module);
-        setActiveModule(module);
+
+        if (module === 'students') {
+            renderDetail(module);
+            appState.activeModule = 'students';
+            dom.moduleButtons.forEach((button) => button.classList.toggle('active', button.getAttribute('data-module-switch') === 'students'));
+            dom.sections.forEach((section) => section.classList.toggle('active', section.getAttribute('data-module') === 'students'));
+
+            document.getElementById('studentsGrid').classList.add('hidden');
+            document.getElementById('studentsHeader').classList.add('hidden');
+            document.getElementById('studentProfileContainer').classList.remove('hidden');
+        } else if (module === 'teachers') {
+            renderDetail(module);
+            appState.activeModule = 'teachers';
+            dom.moduleButtons.forEach((button) => button.classList.toggle('active', button.getAttribute('data-module-switch') === 'teachers'));
+            dom.sections.forEach((section) => section.classList.toggle('active', section.getAttribute('data-module') === 'teachers'));
+
+            document.getElementById('teachersGrid').classList.add('hidden');
+            document.getElementById('teachersHeader').classList.add('hidden');
+            document.getElementById('teacherProfileContainer').classList.remove('hidden');
+        } else {
+            renderDetail(module);
+            setActiveModule(module);
+        }
     };
 
     const openCredentials = (module, id) => {
@@ -850,6 +974,24 @@
         }
 
         renderDetail(module);
+
+        if (module === 'students') {
+            appState.activeModule = 'students';
+            dom.moduleButtons.forEach((button) => button.classList.toggle('active', button.getAttribute('data-module-switch') === 'students'));
+            dom.sections.forEach((section) => section.classList.toggle('active', section.getAttribute('data-module') === 'students'));
+
+            document.getElementById('studentsGrid').classList.add('hidden');
+            document.getElementById('studentsHeader').classList.add('hidden');
+            document.getElementById('studentProfileContainer').classList.remove('hidden');
+        } else if (module === 'teachers') {
+            appState.activeModule = 'teachers';
+            dom.moduleButtons.forEach((button) => button.classList.toggle('active', button.getAttribute('data-module-switch') === 'teachers'));
+            dom.sections.forEach((section) => section.classList.toggle('active', section.getAttribute('data-module') === 'teachers'));
+
+            document.getElementById('teachersGrid').classList.add('hidden');
+            document.getElementById('teachersHeader').classList.add('hidden');
+            document.getElementById('teacherProfileContainer').classList.remove('hidden');
+        }
     };
 
     const togglePasswordVisibility = (module) => {
@@ -1079,8 +1221,37 @@
         bindTableActions();
         bindCredentialButtons();
         initializeForms();
-        setActiveModule('students');
+
+        const hash = window.location.hash;
+        const initialModule = (hash === '#teachers' || hash === '#courses') ? hash.slice(1) : 'students';
+        setActiveModule(initialModule);
+
         renderAll();
+
+        const backBtn = document.getElementById('backToStudentsList');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                document.getElementById('studentsGrid').classList.remove('hidden');
+                document.getElementById('studentsHeader').classList.remove('hidden');
+                document.getElementById('studentProfileContainer').classList.add('hidden');
+            });
+        }
+
+        const backTeachersBtn = document.getElementById('backToTeachersList');
+        if (backTeachersBtn) {
+            backTeachersBtn.addEventListener('click', () => {
+                document.getElementById('teachersGrid').classList.remove('hidden');
+                document.getElementById('teachersHeader').classList.remove('hidden');
+                document.getElementById('teacherProfileContainer').classList.add('hidden');
+            });
+        }
+
+        window.addEventListener('hashchange', () => {
+            const currentHash = window.location.hash;
+            if (currentHash === '#teachers' || currentHash === '#courses' || currentHash === '#students') {
+                setActiveModule(currentHash.slice(1));
+            }
+        });
     };
 
     document.addEventListener('DOMContentLoaded', initialize);
