@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO users (name, email, password, role, is_active)
+INSERT INTO users (name, username, email, password, role, is_active)
 VALUES
   ('Admin User', 'admin_user', 'admin@college.test', '$2y$10$ohabqSnYakv1sTMYavh91eOrUUqlO4AE4lGTMrb0ll13bZKpzdZAC', 'admin', 1),
   ('Teacher User', 'teacher_user', 'teacher@college.test', '$2y$10$BeR3LIbV.HpctK2p.vUwJeWr8yLWhY.4/3tovrpjMg6fLT/2Cbvtu', 'teacher', 1),
@@ -41,6 +41,19 @@ CREATE TABLE IF NOT EXISTS courses (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO courses (course_name, course_code, duration, semester_count, total_fees, description, is_active)
+VALUES
+  ('Bachelor of Computer Science', 'BCS-101', '4 Years', 8, 45000.00, 'Computer science undergraduate program.', 1),
+  ('Bachelor of Business Administration', 'BBA-201', '4 Years', 8, 38000.00, 'Business administration undergraduate program.', 1),
+  ('Master of Information Technology', 'MIT-301', '2 Years', 4, 52000.00, 'Postgraduate IT program.', 1)
+ON DUPLICATE KEY UPDATE
+  course_name = VALUES(course_name),
+  duration = VALUES(duration),
+  semester_count = VALUES(semester_count),
+  total_fees = VALUES(total_fees),
+  description = VALUES(description),
+  is_active = VALUES(is_active);
 
 CREATE TABLE IF NOT EXISTS students (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

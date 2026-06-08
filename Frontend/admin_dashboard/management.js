@@ -1,5 +1,9 @@
 (function () {
-    const state = window.managementData || { students: [], teachers: [], courses: [] };
+    const state = window.managementData || { students: [], teachers: [], courses: [], summary: {} };
+    const config = window.managementConfig || {};
+    const apiUrl = config.apiUrl || '../../Backend/management_api.php';
+    let toastTimer = null;
+
     const dom = {
         moduleButtons: Array.from(document.querySelectorAll('[data-module-switch]')),
         sections: Array.from(document.querySelectorAll('[data-module]')),
@@ -26,7 +30,7 @@
                 course: document.querySelector('[data-detail-course="students"]'),
                 attendance: document.querySelector('[data-detail-attendance="students"]'),
                 fees: document.querySelector('[data-detail-fees="students"]'),
-                credentialUsername: document.querySelector('[data-credential-username="students"]'),
+                credentialEmail: document.querySelector('[data-credential-email="students"]'),
                 credentialPassword: document.querySelector('[data-credential-password="students"]'),
             },
             teachers: {
@@ -39,7 +43,7 @@
                 course: document.querySelector('[data-detail-course="teachers"]'),
                 attendance: document.querySelector('[data-detail-attendance="teachers"]'),
                 fees: document.querySelector('[data-detail-fees="teachers"]'),
-                credentialUsername: document.querySelector('[data-credential-username="teachers"]'),
+                credentialEmail: document.querySelector('[data-credential-email="teachers"]'),
                 credentialPassword: document.querySelector('[data-credential-password="teachers"]'),
             },
             courses: {
@@ -67,6 +71,8 @@
         },
         summaryValues: Array.from(document.querySelectorAll('[data-summary-value]')),
         summarySubtitles: Array.from(document.querySelectorAll('[data-summary-subtitle]')),
+        toast: document.querySelector('[data-management-toast]'),
+        saveButton: document.querySelector('[data-modal-form] .primary-button'),
     };
 
     const appState = {
@@ -104,6 +110,107 @@
     };
 
     const normalize = (value) => String(value ?? '').toLowerCase().trim();
+
+    const normalizeModule = (module) => {
+        if (module === 'student' || module === 'students') {
+            return 'students';
+        }
+
+        if (module === 'teacher' || module === 'teachers') {
+            return 'teachers';
+        }
+
+        return 'courses';
+    };
+
+    const showToast = (message, type = 'success') => {
+        if (!dom.toast) {
+            window.alert(message);
+            return;
+        }
+
+        dom.toast.textContent = message;
+        dom.toast.classList.remove('hidden', 'is-error', 'is-success');
+        dom.toast.classList.add(type === 'error' ? 'is-error' : 'is-success');
+
+        if (toastTimer) {
+            window.clearTimeout(toastTimer);
+        }
+
+        toastTimer = window.setTimeout(() => {
+            dom.toast.classList.add('hidden');
+        }, 4200);
+    };
+
+    const apiRequest = async (module, action, payload = {}) => {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                module: normalizeModule(module),
+                action,
+                payload,
+            }),
+        });
+
+        let result = {};
+        try {
+            result = await response.json();
+        } catch (error) {
+            throw new Error('Invalid server response.');
+        }
+
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Request failed.');
+        }
+
+        return result;
+    };
+
+    const applySummary = (summary) => {
+        if (!summary || typeof summary !== 'object') {
+            return;
+        }
+
+        state.summary = summary;
+        setSummary();
+    };
+
+    const getFieldValue = (record, config) => {
+        if (!record) {
+            return config.defaultValue ?? '';
+        }
+
+        if (config.name === 'is_active') {
+            return record.is_active ? '1' : '0';
+        }
+
+        if (config.name === 'course_id') {
+            return record.course_id != null ? String(record.course_id) : '';
+        }
+
+        return record[config.name] ?? '';
+    };
+
+    const getCourseOptions = () => {
+        const courses = getCollection('courses');
+
+        if (!courses.length) {
+            return [{ value: '', label: 'No courses available — create a course first' }];
+        }
+
+        return [
+            { value: '', label: 'Select Course' },
+            ...courses.map((course) => ({
+                value: String(course.id),
+                label: course.is_active ? course.course_name : `${course.course_name} (Inactive)`,
+            })),
+        ];
+    };
 
     const generateUsername = (fullName, prefix = '') => {
         const base = normalize(fullName).replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || prefix || 'user';
@@ -148,6 +255,104 @@
         appState.activeModule = module;
         dom.moduleButtons.forEach((button) => button.classList.toggle('active', button.getAttribute('data-module-switch') === module));
         dom.sections.forEach((section) => section.classList.toggle('active', section.getAttribute('data-module') === module));
+    };
+
+    const closeAllRowMenus = () => {
+        document.querySelectorAll('[data-row-actions]').forEach((container) => {
+            const panel = container.querySelector('.row-menu-panel');
+            const toggle = container.querySelector('[data-row-menu-toggle]');
+
+            if (panel) {
+                panel.classList.add('hidden');
+                panel.classList.remove('is-open');
+                panel.style.position = '';
+                panel.style.top = '';
+                panel.style.left = '';
+                panel.style.right = '';
+                panel.style.visibility = '';
+                panel.style.zIndex = '';
+            }
+
+            toggle?.setAttribute('aria-expanded', 'false');
+        });
+    };
+
+    const positionRowMenu = (toggle, panel) => {
+        panel.classList.remove('hidden');
+        panel.style.position = 'fixed';
+        panel.style.visibility = 'hidden';
+        panel.style.top = '0';
+        panel.style.left = '0';
+        panel.style.zIndex = '2500';
+
+        const panelWidth = panel.offsetWidth;
+        const panelHeight = panel.offsetHeight;
+        const rect = toggle.getBoundingClientRect();
+
+        let top = rect.bottom + 8;
+        let left = rect.right - panelWidth;
+        left = Math.max(12, Math.min(left, window.innerWidth - panelWidth - 12));
+
+        if (top + panelHeight > window.innerHeight - 12) {
+            top = Math.max(12, rect.top - panelHeight - 8);
+        }
+
+        panel.style.top = `${top}px`;
+        panel.style.left = `${left}px`;
+        panel.style.right = 'auto';
+        panel.style.visibility = '';
+        panel.classList.add('is-open');
+    };
+
+    const buildRowActionsMenu = (module, record) => {
+        const header = module === 'students'
+            ? 'Student Settings'
+            : module === 'teachers'
+                ? 'Teacher Settings'
+                : 'Course Settings';
+        const toggleLabel = record.is_active ? 'Deactivate' : 'Activate';
+        const items = module === 'courses'
+            ? [
+                { action: 'view', label: 'View Details' },
+                { action: 'edit', label: 'Edit Course' },
+                { action: 'toggle', label: toggleLabel },
+                { action: 'delete', label: 'Delete Course', danger: true },
+            ]
+            : [
+                { action: 'view', label: 'View Profile' },
+                { action: 'edit', label: 'Edit' },
+                { action: 'credentials', label: 'View Credentials' },
+                { action: 'toggle', label: toggleLabel },
+                { action: 'delete', label: 'Delete', danger: true },
+            ];
+
+        return `
+            <div class="row-actions" data-row-actions>
+                <button
+                    type="button"
+                    class="row-menu-toggle"
+                    data-row-menu-toggle
+                    aria-label="Open ${header.toLowerCase()}"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                >
+                    <span class="row-menu-dots" aria-hidden="true"></span>
+                </button>
+                <div class="row-menu-panel hidden" role="menu">
+                    <div class="row-menu-header">${header}</div>
+                    ${items.map((item) => `
+                        <button
+                            type="button"
+                            class="row-menu-item${item.danger ? ' danger' : ''}"
+                            role="menuitem"
+                            data-action="${item.action}"
+                            data-module="${module}"
+                            data-id="${record.id}"
+                        >${item.label}</button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
     };
 
     const buildTableRows = (module) => {
@@ -202,15 +407,7 @@
                     <td>${record.phone || '-'}</td>
                     <td>${record.course_name || '-'}</td>
                     <td><span class="${getStatusClass(record.is_active)}">${getStatusLabel(record.is_active)}</span></td>
-                    <td>
-                        <div class="action-group">
-                            <button class="action-button primary" data-action="view" data-module="students" data-id="${record.id}">View</button>
-                            <button class="action-button" data-action="edit" data-module="students" data-id="${record.id}">Edit</button>
-                            <button class="action-button danger" data-action="delete" data-module="students" data-id="${record.id}">Delete</button>
-                            <button class="action-button primary" data-action="credentials" data-module="students" data-id="${record.id}">Credentials</button>
-                            <button class="action-button" data-action="toggle" data-module="students" data-id="${record.id}">${record.is_active ? 'Deactivate' : 'Activate'}</button>
-                        </div>
-                    </td>
+                    <td class="actions-cell">${buildRowActionsMenu('students', record)}</td>
                 `;
             }
 
@@ -223,15 +420,7 @@
                     <td>${record.email}</td>
                     <td>${record.department || '-'}</td>
                     <td><span class="${getStatusClass(record.is_active)}">${getStatusLabel(record.is_active)}</span></td>
-                    <td>
-                        <div class="action-group">
-                            <button class="action-button primary" data-action="view" data-module="teachers" data-id="${record.id}">View</button>
-                            <button class="action-button" data-action="edit" data-module="teachers" data-id="${record.id}">Edit</button>
-                            <button class="action-button danger" data-action="delete" data-module="teachers" data-id="${record.id}">Delete</button>
-                            <button class="action-button primary" data-action="credentials" data-module="teachers" data-id="${record.id}">Credentials</button>
-                            <button class="action-button" data-action="toggle" data-module="teachers" data-id="${record.id}">${record.is_active ? 'Deactivate' : 'Activate'}</button>
-                        </div>
-                    </td>
+                    <td class="actions-cell">${buildRowActionsMenu('teachers', record)}</td>
                 `;
             }
 
@@ -244,14 +433,7 @@
                     <td>${formatCurrency(record.total_fees)}</td>
                     <td>${record.total_students}</td>
                     <td><span class="${getStatusClass(record.is_active)}">${getStatusLabel(record.is_active)}</span></td>
-                    <td>
-                        <div class="action-group">
-                            <button class="action-button primary" data-action="view" data-module="courses" data-id="${record.id}">View</button>
-                            <button class="action-button" data-action="edit" data-module="courses" data-id="${record.id}">Edit</button>
-                            <button class="action-button danger" data-action="delete" data-module="courses" data-id="${record.id}">Delete</button>
-                            <button class="action-button" data-action="toggle" data-module="courses" data-id="${record.id}">${record.is_active ? 'Deactivate' : 'Activate'}</button>
-                        </div>
-                    </td>
+                    <td class="actions-cell">${buildRowActionsMenu('courses', record)}</td>
                 `;
             }
 
@@ -261,6 +443,38 @@
         if (!appState.selected[module] && rows.length) {
             appState.selected[module] = rows[0].id;
         }
+    };
+
+    const renderCredentialPassword = (module, record) => {
+        const detail = dom.detail[module];
+        if (!detail?.credentialPassword) {
+            return;
+        }
+
+        const credentials = record.credentials || {};
+        const password = String(credentials.password || '');
+        const visible = Boolean(credentials.passwordVisible && password);
+
+        detail.credentialPassword.textContent = visible ? password : '********';
+        detail.credentialPassword.classList.toggle('is-visible', visible);
+
+        const toggleButton = document.querySelector(`[data-toggle-password="${module}"]`);
+        if (toggleButton) {
+            toggleButton.textContent = visible ? 'Hide Password' : 'Show Password';
+        }
+    };
+
+    const replaceRecordInState = (module, nextRecord) => {
+        const collectionName = normalizeModule(module);
+        const list = getCollection(collectionName);
+        const index = list.findIndex((entry) => Number(entry.id) === Number(nextRecord.id));
+
+        if (index >= 0) {
+            list[index] = nextRecord;
+        }
+
+        state[collectionName] = list;
+        appState.selected[collectionName] = nextRecord.id;
     };
 
     const renderDetail = (module) => {
@@ -297,8 +511,8 @@
             ].join(' | ');
             detail.attendance.textContent = `Present ${record.attendance?.present || 0} | Absent ${record.attendance?.absent || 0} | Leave ${record.attendance?.leave || 0}`;
             detail.fees.textContent = `Due ${formatCurrency(record.fees?.due || 0)} | Paid ${formatCurrency(record.fees?.paid || 0)} | Status ${record.fees?.status || 'pending'}`;
-            detail.credentialUsername.textContent = record.credentials?.username || record.username || '-';
-            detail.credentialPassword.textContent = record.credentials?.password && record.credentials.passwordVisible ? record.credentials.password : '********';
+            detail.credentialEmail.textContent = record.credentials?.email || record.email || '-';
+            renderCredentialPassword(module, record);
             return;
         }
 
@@ -310,8 +524,8 @@
             detail.course.textContent = `Department: ${record.department || '-'} | Qualification: ${record.qualification || '-'}`;
             detail.attendance.textContent = `Joining Date: ${formatDate(record.joining_date)}`;
             detail.fees.textContent = `Assigned Courses: ${record.assigned_courses || 0}`;
-            detail.credentialUsername.textContent = record.credentials?.username || record.username || '-';
-            detail.credentialPassword.textContent = record.credentials?.password && record.credentials.passwordVisible ? record.credentials.password : '********';
+            detail.credentialEmail.textContent = record.credentials?.email || record.email || '-';
+            renderCredentialPassword(module, record);
             return;
         }
 
@@ -359,7 +573,7 @@
     };
 
     const openModal = (module, mode = 'create', recordId = null) => {
-        appState.modal.module = module;
+        appState.modal.module = normalizeModule(module);
         appState.modal.mode = mode;
         appState.modal.recordId = recordId;
 
@@ -381,7 +595,7 @@
         dom.modalBackdrop.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
 
-        renderForm(module, getRecordForForm(module, recordId));
+        renderForm(normalizeModule(module), getRecordForForm(normalizeModule(module), recordId));
     };
 
     const closeModal = () => {
@@ -412,7 +626,7 @@
             field.innerHTML = `<label for="${config.name}">${config.label}</label>`;
 
             let control = '';
-            const value = record ? (record[config.name] ?? '') : (config.defaultValue ?? '');
+            const value = getFieldValue(record, config);
 
             if (config.type === 'textarea') {
                 control = `<textarea id="${config.name}" name="${config.name}" placeholder="${config.placeholder || ''}">${value || ''}</textarea>`;
@@ -439,10 +653,7 @@
                 { value: 'other', label: 'Other' },
             ] },
             { name: 'date_of_birth', label: 'Date of Birth', type: 'date' },
-            { name: 'course_id', label: 'Course', type: 'select', options: () => [
-                { value: '', label: 'Select Course' },
-                ...getCollection('courses').map((course) => ({ value: String(course.id), label: course.course_name })),
-            ] },
+            { name: 'course_id', label: 'Course', type: 'select', options: getCourseOptions },
             { name: 'semester', label: 'Semester', type: 'text', placeholder: 'e.g. Semester 1' },
             { name: 'profile_photo', label: 'Profile Photo URL', type: 'url', fullWidth: true, placeholder: 'https://...' },
             { name: 'is_active', label: 'Status', type: 'select', options: [
@@ -483,95 +694,83 @@
         selectedFields.forEach((field) => containers[module].appendChild(createField(field)));
     };
 
-    const saveRecord = () => {
-        const module = appState.modal.module;
-        const formData = new FormData(dom.modalForm);
-        const recordId = appState.modal.recordId;
-        const existingRecord = getRecordForForm(module === 'student' ? 'students' : module === 'teacher' ? 'teachers' : 'courses', recordId);
-        const collectionName = module === 'student' ? 'students' : module === 'teacher' ? 'teachers' : 'courses';
-        const record = existingRecord ? structuredClone(existingRecord) : null;
-        const isEdit = appState.modal.mode === 'edit' && record;
-        const courseId = formData.get('course_id');
-        const courseRecord = getCollection('courses').find((course) => String(course.id) === String(courseId));
+    const buildPayloadFromForm = (module, formData, recordId) => {
+        const collectionName = normalizeModule(module);
+        const payload = {};
+
+        formData.forEach((value, key) => {
+            payload[key] = typeof value === 'string' ? value.trim() : value;
+        });
 
         if (collectionName === 'students') {
-            const fullName = String(formData.get('full_name') || '').trim();
-            const username = String(formData.get('username') || '').trim() || generateUsername(fullName, 'student');
-            const password = isEdit && record?.credentials?.password ? record.credentials.password : generatePassword();
+            if (!payload.full_name || !payload.email) {
+                throw new Error('Full name and email are required.');
+            }
 
-            const nextRecord = {
-                id: isEdit ? record.id : Date.now(),
-                full_name: fullName,
-                username,
-                email: String(formData.get('email') || '').trim(),
-                phone: String(formData.get('phone') || '').trim(),
-                address: String(formData.get('address') || '').trim(),
-                gender: String(formData.get('gender') || 'other'),
-                date_of_birth: String(formData.get('date_of_birth') || ''),
-                semester: String(formData.get('semester') || '').trim(),
-                profile_photo: String(formData.get('profile_photo') || '').trim(),
-                is_active: String(formData.get('is_active') || '1') === '1',
-                course_id: courseId ? Number(courseId) : null,
-                course_name: courseRecord?.course_name || '',
-                course_code: courseRecord?.course_code || '',
-                attendance: existingRecord?.attendance || { present: 0, absent: 0, leave: 0 },
-                fees: existingRecord?.fees || { due: 0, paid: 0, status: 'pending' },
-                credentials: {
-                    username,
-                    password,
-                    passwordVisible: true,
-                },
-            };
-
-            upsertRecord('students', nextRecord);
+            payload.is_active = String(payload.is_active || '1') === '1';
+            payload.course_id = payload.course_id ? Number(payload.course_id) : null;
         }
 
         if (collectionName === 'teachers') {
-            const fullName = String(formData.get('full_name') || '').trim();
-            const username = String(formData.get('username') || '').trim() || generateUsername(fullName, 'teacher');
-            const password = isEdit && record?.credentials?.password ? record.credentials.password : generatePassword();
+            if (!payload.full_name || !payload.email || !payload.department) {
+                throw new Error('Full name, email, and department are required.');
+            }
 
-            const nextRecord = {
-                id: isEdit ? record.id : Date.now(),
-                full_name: fullName,
-                username,
-                email: String(formData.get('email') || '').trim(),
-                phone: String(formData.get('phone') || '').trim(),
-                department: String(formData.get('department') || '').trim(),
-                qualification: String(formData.get('qualification') || '').trim(),
-                joining_date: String(formData.get('joining_date') || ''),
-                profile_photo: String(formData.get('profile_photo') || '').trim(),
-                is_active: String(formData.get('is_active') || '1') === '1',
-                assigned_courses: existingRecord?.assigned_courses || 0,
-                credentials: {
-                    username,
-                    password,
-                    passwordVisible: true,
-                },
-            };
-
-            upsertRecord('teachers', nextRecord);
+            payload.is_active = String(payload.is_active || '1') === '1';
         }
 
         if (collectionName === 'courses') {
-            const nextRecord = {
-                id: isEdit ? record.id : Date.now(),
-                course_name: String(formData.get('course_name') || '').trim(),
-                course_code: String(formData.get('course_code') || '').trim(),
-                duration: String(formData.get('duration') || '').trim(),
-                semester_count: Number(formData.get('semester_count') || 0),
-                total_fees: Number(formData.get('total_fees') || 0),
-                description: String(formData.get('description') || '').trim(),
-                is_active: String(formData.get('is_active') || '1') === '1',
-                total_students: existingRecord?.total_students || 0,
-                total_teachers: existingRecord?.total_teachers || 0,
-                assigned_teachers: existingRecord?.assigned_teachers || [],
-            };
+            if (!payload.course_name || !payload.course_code || !payload.duration) {
+                throw new Error('Course name, code, and duration are required.');
+            }
 
-            upsertRecord('courses', nextRecord);
+            payload.semester_count = Number(payload.semester_count || 1);
+            payload.total_fees = Number(payload.total_fees || 0);
+            payload.is_active = String(payload.is_active || '1') === '1';
         }
 
-        closeModal();
+        if (recordId) {
+            payload.id = Number(recordId);
+        }
+
+        return payload;
+    };
+
+    const saveRecord = async () => {
+        const module = normalizeModule(appState.modal.module);
+        const formData = new FormData(dom.modalForm);
+        const recordId = appState.modal.recordId;
+        const isEdit = appState.modal.mode === 'edit' && recordId;
+        const saveButton = dom.saveButton;
+
+        let payload;
+
+        try {
+            payload = buildPayloadFromForm(module, formData, recordId);
+        } catch (error) {
+            showToast(error.message || 'Please complete the required fields.', 'error');
+            return;
+        }
+
+        if (saveButton) {
+            saveButton.disabled = true;
+            saveButton.textContent = isEdit ? 'Saving...' : 'Creating...';
+        }
+
+        try {
+            const result = await apiRequest(module, isEdit ? 'update' : 'create', payload);
+            upsertRecord(module, result.record);
+            applySummary(result.summary);
+            closeModal();
+            showToast(result.message || 'Record saved successfully.');
+        } catch (error) {
+            showToast(error.message || 'Could not save the record.', 'error');
+        } finally {
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save Record';
+            }
+        }
     };
 
     const upsertRecord = (collection, nextRecord) => {
@@ -597,22 +796,40 @@
         ['students', 'teachers', 'courses'].forEach((module) => renderModule(module));
     };
 
-    const removeRecord = (module, id) => {
-        const confirmed = window.confirm(`Delete this ${module.slice(0, -1)}?`);
+    const removeRecord = async (module, id) => {
+        const collectionName = normalizeModule(module);
+        const confirmed = window.confirm(`Delete this ${collectionName.slice(0, -1)}?`);
         if (!confirmed) {
             return;
         }
 
-        state[module] = getCollection(module).filter((record) => Number(record.id) !== Number(id));
-        appState.selected[module] = state[module][0]?.id || null;
-        renderAll();
+        try {
+            const result = await apiRequest(collectionName, 'delete', { id: Number(id) });
+            state[collectionName] = getCollection(collectionName).filter((record) => Number(record.id) !== Number(id));
+            appState.selected[collectionName] = state[collectionName][0]?.id || null;
+            applySummary(result.summary);
+            renderAll();
+            showToast(result.message || 'Record deleted successfully.');
+        } catch (error) {
+            showToast(error.message || 'Could not delete the record.', 'error');
+        }
     };
 
-    const toggleStatus = (module, id) => {
-        state[module] = getCollection(module).map((record) => Number(record.id) === Number(id)
-            ? { ...record, is_active: !record.is_active }
-            : record);
-        renderAll();
+    const toggleStatus = async (module, id) => {
+        const collectionName = normalizeModule(module);
+
+        try {
+            const result = await apiRequest(collectionName, 'toggle', { id: Number(id) });
+            const index = getCollection(collectionName).findIndex((record) => Number(record.id) === Number(id));
+            if (index >= 0 && result.record) {
+                getCollection(collectionName)[index] = result.record;
+            }
+            applySummary(result.summary);
+            renderAll();
+            showToast(result.message || 'Status updated successfully.');
+        } catch (error) {
+            showToast(error.message || 'Could not update the status.', 'error');
+        }
     };
 
     const showRecord = (module, id) => {
@@ -629,7 +846,7 @@
 
         appState.selected[module] = Number(id);
         if (!record.credentials) {
-            record.credentials = { username: record.username || '', password: '', passwordVisible: false };
+            record.credentials = { email: record.email || '', password: '', passwordVisible: false };
         }
 
         renderDetail(module);
@@ -637,7 +854,14 @@
 
     const togglePasswordVisibility = (module) => {
         const record = getSelectedRecord(module);
-        if (!record || !record.credentials) {
+        if (!record) {
+            return;
+        }
+
+        record.credentials = record.credentials || { email: record.email || '', password: '', passwordVisible: false };
+
+        if (!record.credentials.password) {
+            showToast('Password is encrypted. Click Reset Password first to generate a new login password.', 'error');
             return;
         }
 
@@ -645,16 +869,26 @@
         renderDetail(module);
     };
 
-    const resetPassword = (module) => {
-        const record = getSelectedRecord(module);
+    const resetPassword = async (module) => {
+        const collectionName = normalizeModule(module);
+        const record = getSelectedRecord(collectionName);
         if (!record) {
             return;
         }
 
-        record.credentials = record.credentials || {};
-        record.credentials.password = generatePassword();
-        record.credentials.passwordVisible = true;
-        renderDetail(module);
+        const confirmed = window.confirm('Generate a new password for this user? The old password will stop working.');
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const result = await apiRequest(collectionName, 'reset_password', { id: record.id });
+            replaceRecordInState(collectionName, result.record);
+            renderDetail(collectionName);
+            showToast(result.message || 'Password reset successfully.');
+        } catch (error) {
+            showToast(error.message || 'Could not reset the password.', 'error');
+        }
     };
 
     const copyValue = async (text) => {
@@ -719,7 +953,6 @@
             button.addEventListener('click', () => {
                 const label = button.getAttribute('data-open-modal');
                 const module = label === 'student' ? 'students' : label === 'teacher' ? 'teachers' : 'courses';
-                appState.modal.module = label;
                 appState.modal.mode = 'create';
                 appState.modal.recordId = null;
                 openModal(module, 'create', null);
@@ -734,16 +967,39 @@
 
         dom.modalForm.addEventListener('submit', (event) => {
             event.preventDefault();
-            saveRecord();
+            void saveRecord();
         });
     };
 
     const bindTableActions = () => {
+        window.addEventListener('scroll', closeAllRowMenus, true);
+        window.addEventListener('resize', closeAllRowMenus);
+
         document.addEventListener('click', (event) => {
+            const menuToggle = event.target.closest('[data-row-menu-toggle]');
+            if (menuToggle) {
+                event.stopPropagation();
+                const container = menuToggle.closest('[data-row-actions]');
+                const panel = container?.querySelector('.row-menu-panel');
+                const isOpen = panel && !panel.classList.contains('hidden');
+                closeAllRowMenus();
+                if (panel && !isOpen) {
+                    positionRowMenu(menuToggle, panel);
+                    menuToggle.setAttribute('aria-expanded', 'true');
+                }
+                return;
+            }
+
+            if (!event.target.closest('[data-row-actions]')) {
+                closeAllRowMenus();
+            }
+
             const button = event.target.closest('[data-action]');
             if (!button) {
                 return;
             }
+
+            closeAllRowMenus();
 
             const action = button.getAttribute('data-action');
             const module = button.getAttribute('data-module');
@@ -755,7 +1011,6 @@
             }
 
             if (action === 'edit') {
-                appState.modal.module = module === 'students' ? 'student' : module === 'teachers' ? 'teacher' : 'course';
                 appState.modal.mode = 'edit';
                 appState.modal.recordId = Number(id);
                 openModal(module, 'edit', Number(id));
@@ -763,12 +1018,12 @@
             }
 
             if (action === 'delete') {
-                removeRecord(module, id);
+                void removeRecord(module, id);
                 return;
             }
 
             if (action === 'toggle') {
-                toggleStatus(module, id);
+                void toggleStatus(module, id);
                 return;
             }
 
@@ -782,15 +1037,17 @@
         document.addEventListener('click', async (event) => {
             const target = event.target;
 
-            const copyButton = target.closest('[data-copy-username], [data-copy-password]');
+            const copyButton = target.closest('[data-copy-email], [data-copy-password]');
             if (copyButton) {
-                const module = copyButton.getAttribute('data-copy-username') || copyButton.getAttribute('data-copy-password');
+                const module = copyButton.getAttribute('data-copy-email') || copyButton.getAttribute('data-copy-password');
                 const record = getSelectedRecord(module);
                 if (!record) {
                     return;
                 }
 
-                const value = copyButton.hasAttribute('data-copy-username') ? (record.credentials?.username || record.username || '') : (record.credentials?.password || '');
+                const value = copyButton.hasAttribute('data-copy-email')
+                    ? (record.credentials?.email || record.email || '')
+                    : (record.credentials?.password || '');
                 await copyValue(value);
                 return;
             }
@@ -803,7 +1060,7 @@
 
             const resetButton = target.closest('[data-reset-password]');
             if (resetButton) {
-                resetPassword(resetButton.getAttribute('data-reset-password'));
+                void resetPassword(resetButton.getAttribute('data-reset-password'));
             }
         });
     };
