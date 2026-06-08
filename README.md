@@ -13,7 +13,7 @@
 - Sushma Bartula
 - Anuska Baniya
 
----
+---![alt text](image.png)
 
 ## Folder Structure
 
